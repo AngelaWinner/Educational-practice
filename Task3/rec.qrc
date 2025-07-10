@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/rec">
+        <file>friends.jpg</file>
+    </qresource>
+</RCC>
