@@ -1,0 +1,3 @@
+Triangle;214;218;486;245;#ffffff
+Triangle;228;203;322;359;#55ff00
+Triangle;84;103;364;264;#ff0000

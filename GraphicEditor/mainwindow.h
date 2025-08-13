@@ -33,5 +33,7 @@ private slots:
     void on_paintRudeByMouseButton_clicked();
     void on_paintRenderByMouseButton_clicked();
     void on_chooseColorButton_clicked();
+    void on_saveButton_clicked();
+    void on_openButton_clicked();
 };
 #endif // MAINWINDOW_H

@@ -17,21 +17,22 @@ class Figure : public QObject, public QGraphicsItem
                        NOTIFY pointChanged)
 public:
     explicit Figure(QPointF point, QObject *parent = 0);
-    ~Figure();
+    virtual ~Figure();
     QPointF startPoint() const; //стартовая точка
     QPointF endPoint() const; //конечная точка
     void setStartPoint(const QPointF point);
     void setEndPoint(const QPointF point);
 
-    void setColor(const QColor& color);
-    QColor getColor() const;
-    QColor m_color = Qt::black;
+    virtual void setColor(const QColor& color);
+    virtual QColor getColor() const;
+    virtual QString serialize() const = 0; // чисто виртуальный метод
 signals:
     void pointChanged();
 private:
     QPointF m_startPoint;
     QPointF m_endPoint;
     QRectF boundingRect() const; //область, в которой содержится фигура
+    QColor m_color = Qt::black;
 public slots:
     void updateRomb();
 };

@@ -11,8 +11,10 @@ class Triangle : public Figure
 public:
     explicit Triangle(QPointF point, QObject *parent = 0);
     ~Triangle();
+    static Triangle* deserialize(const QString &data);
 private:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+    QString serialize() const override;
 };
 
 #endif // TRIANGLE_H
