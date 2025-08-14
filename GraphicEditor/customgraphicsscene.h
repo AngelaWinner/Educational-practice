@@ -27,6 +27,12 @@ public:
 
     void setDrawingColor(const QColor& color);
     QColor drawingColor = Qt::red;
+
+    //QPointF pointOfPath;
+    QVector<QPointF> currentPath;
+    QVector<QPair<QVector<QPointF>, QColor>> paths; // все сохранённые пути
+    QString serializePath(const QPair<QVector<QPointF>, QColor>& path);
+    QVector<QPointF> deserializePath(QStringList parts);
 signals:
     void typeFigureChanged(); //сигнал об изменении типа текущей фигуры
 private:

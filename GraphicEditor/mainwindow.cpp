@@ -95,6 +95,9 @@ void MainWindow::on_saveButton_clicked() {
         for (auto fig : figures) {
             out << fig->serialize() << "\n"; // сохраняем сериализованную строку
         }
+        for (auto path : scene->paths) {
+        out << scene->serializePath(path)<<"\n";
+        }
         file.close();
     } else {
         QMessageBox::warning(this, "Ошибка", "Не удалось сохранить файл");
@@ -125,32 +128,42 @@ void MainWindow::on_openButton_clicked() {
         QString type = parts[0];
 
         if (type == "Square" && parts.size() == 6) {
-        // Формат: Square;startX;startY;width;height;colorHex
-        bool ok1, ok2, ok3, ok4;
-        double startX = parts[1].toDouble(&ok1);
-        double startY = parts[2].toDouble(&ok2);
-        double width = parts[3].toDouble(&ok3);
-        double height = parts[4].toDouble(&ok4);
-        QString colorStr = parts[5];
+            // Формат: Square;startX;startY;width;height;colorHex
+            bool ok1, ok2, ok3, ok4;
+            double startX = parts[1].toDouble(&ok1);
+            double startY = parts[2].toDouble(&ok2);
+            double width = parts[3].toDouble(&ok3);
+            double height = parts[4].toDouble(&ok4);
+            QString colorStr = parts[5];
 
-        if (ok1 && ok2 && ok3 && ok4) {
-            QPointF startPoint(startX, startY);
-            QPointF endPoint(startX + width, startY + height);
+            if (ok1 && ok2 && ok3 && ok4) {
+                QPointF startPoint(startX, startY);
+                QPointF endPoint(startX + width, startY + height);
 
-            // Создаем фигуру
-            Square* square = new Square(startPoint); // инициализация
-            // Устанавливаем точки явно, если нужно
-            square->setStartPoint(startPoint);
-            square->setEndPoint(endPoint);
-            square->setColor(QColor(colorStr));
-            //scene->addItem(square);
-            itemsToAdd.append(square);
-        }
+                // Создаем фигуру
+                Square* square = new Square(startPoint); // инициализация
+                // Устанавливаем точки явно, если нужно
+                square->setStartPoint(startPoint);
+                square->setEndPoint(endPoint);
+                square->setColor(QColor(colorStr));
+                //scene->addItem(square);
+                itemsToAdd.append(square);
+            }
         } else if (type == "Triangle") {
             Triangle* triangle = Triangle::deserialize(line);
             if (triangle) {
                 //scene->addItem(triangle);
                 itemsToAdd.append(triangle);
+            }
+        } else if (type == "Path" && parts.size() >= 3) {
+            QString colorStr = parts[1];
+            QColor color(colorStr);
+            QVector<QPointF> pathPoints = scene->deserializePath(parts);
+            for (auto point : pathPoints) {
+                scene->addEllipse(point.x()-5,
+                           point.y()-5,
+                           10,10,
+                           QPen(Qt::NoPen), QBrush(color));
             }
         }
         // Аналогично для других фигур

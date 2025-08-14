@@ -36,6 +36,9 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
                 event->scenePos().y(),
                 QPen(drawingColor, 10, Qt::SolidLine, Qt::RoundCap));
         previousPoint=event->scenePos();
+
+        currentPath.append(event->scenePos());
+
         return;
     }
     if (tempFigure) {
@@ -63,6 +66,9 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event){
                    10,10,
                    QPen(Qt::NoPen), QBrush(drawingColor));
         previousPoint=event->scenePos();
+
+        currentPath.append(event->scenePos()); //заполняю массив точек
+
         return;
     }
 
@@ -96,10 +102,48 @@ void CustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
         return; // не передаем дальше
     }
 
+    if (m_isDrawingRender) {
+        paths.append(QPair(currentPath, drawingColor));
+        currentPath.clear();
+    }
+
     // Остальной код (если нужен)
     QGraphicsScene::mouseReleaseEvent(event);
 }
 
 void CustomGraphicsScene::setDrawingColor(const QColor& color) {
     drawingColor = color;
+}
+
+QString CustomGraphicsScene::serializePath(const QPair<QVector<QPointF>, QColor>& path) {
+    //QString result;
+    //for (const auto& path : paths) {
+    QStringList pointStrings;
+    pointStrings << "Path";
+    pointStrings << path.second.name(); // цвет в HEX
+    for (const QPointF& pt : path.first) {
+        pointStrings << QString("%1,%2").arg(pt.x()).arg(pt.y());
+    }
+    //result += pointStrings.join(";") + "\n"; // разделяем точки запятой, а пути — новой строкой
+    //}
+    return pointStrings.join(";");
+}
+
+QVector<QPointF> CustomGraphicsScene::deserializePath(QStringList parts) {
+    QVector<QPointF> pathPoints;
+    // parts[0] = "Path"
+    // parts[1] = цвет
+    // остальные = точки
+    for (int i = 2; i < parts.size(); ++i) {
+        QStringList coords = parts[i].split(',', Qt::SkipEmptyParts);
+        if (coords.size() == 2) {
+            bool okX, okY;
+            double x = coords[0].toDouble(&okX);
+            double y = coords[1].toDouble(&okY);
+            if (okX && okY) {
+                pathPoints.append(QPointF(x, y));
+            }
+        }
+    }
+    return pathPoints;
 }
