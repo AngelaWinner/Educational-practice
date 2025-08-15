@@ -37,11 +37,19 @@ QPointF Figure:: endPoint() const{
     return m_endPoint;
 }
 
-void Figure::setColor(const QColor& color) {
+void Figure::setColorFigure(const QColor& color) {
     m_color = color;
-    //update(); // перерисовать
+    update(); // перерисовать
 }
 
-QColor Figure::getColor() const {
+QColor Figure::getColorFigure() const {
     return m_color;
+}
+
+int Figure::getThicknessFigure() const {
+    return m_thickness;
+}
+void Figure::setThicknessFigure(const int& thickness) {
+    m_thickness = thickness;
+    update(); // перерисовать
 }

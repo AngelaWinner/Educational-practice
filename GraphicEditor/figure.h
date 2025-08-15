@@ -23,8 +23,10 @@ public:
     void setStartPoint(const QPointF point);
     void setEndPoint(const QPointF point);
 
-    virtual void setColor(const QColor& color);
-    virtual QColor getColor() const;
+    void setColorFigure(const QColor& color);
+    QColor getColorFigure() const;
+    int getThicknessFigure() const;
+    void setThicknessFigure(const int& thickness);
     virtual QString serialize() const = 0; // чисто виртуальный метод
 signals:
     void pointChanged();
@@ -33,6 +35,7 @@ private:
     QPointF m_endPoint;
     QRectF boundingRect() const; //область, в которой содержится фигура
     QColor m_color = Qt::black;
+    int m_thickness = 2;
 public slots:
     void updateRomb();
 };

@@ -1,8 +1,11 @@
 #include "customgraphicsscene.h"
 #include "triangle.h"
 #include "square.h"
+#include "romb.h"
 
-CustomGraphicsScene::CustomGraphicsScene(QObject* parent) : QGraphicsScene(parent) {}
+CustomGraphicsScene::CustomGraphicsScene(QObject* parent) : QGraphicsScene(parent) {
+    thicknessScene = 2;
+}
 CustomGraphicsScene::~CustomGraphicsScene(){}
 int CustomGraphicsScene::typeFigure() const{
     return m_typeFigure;
@@ -27,6 +30,7 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
         // Обновляем конечную точку линии
         QLineF newLine(currentLineDrawingRude->line().p1(), event->scenePos());
         currentLineDrawingRude->setLine(newLine);
+
         return; // не передаем дальше
     }
     if (m_isDrawingRender) {
@@ -34,7 +38,7 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
                 previousPoint.y(),
                 event->scenePos().x(),
                 event->scenePos().y(),
-                QPen(drawingColor, 10, Qt::SolidLine, Qt::RoundCap));
+                QPen(сolorScene, thicknessScene, Qt::SolidLine, Qt::RoundCap));
         previousPoint=event->scenePos();
 
         currentPath.append(event->scenePos());
@@ -42,7 +46,8 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
         return;
     }
     if (tempFigure) {
-        tempFigure->setColor(drawingColor);
+        tempFigure->setColorFigure(сolorScene);
+        tempFigure->setThicknessFigure(thicknessScene);
         //устанавливаем конечную координату положения мыши в текущую отрисовываемую фигуру
         tempFigure->setEndPoint(event->scenePos());
         //обновляем содержимое сцены
@@ -54,17 +59,19 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event){
     if (m_isDrawingRude) {
         // Начинаем рисовать линию
         currentLineDrawingRude = new QGraphicsLineItem(QLineF(event->scenePos(), event->scenePos()));
-        QPen pen(drawingColor, 2);
+        QPen pen(сolorScene, thicknessScene);
         currentLineDrawingRude->setPen(pen);
         addItem(currentLineDrawingRude);
+
+        rudeLinePointVector.append(event->scenePos());
         return; // не передаем дальше
     }
 
     if (m_isDrawingRender) {
-        addEllipse(event->scenePos().x()-5,
-                   event->scenePos().y()-5,
-                   10,10,
-                   QPen(Qt::NoPen), QBrush(drawingColor));
+        addEllipse(event->scenePos().x()-thicknessScene/2,
+                   event->scenePos().y()-thicknessScene/2,
+                   thicknessScene,thicknessScene,
+                   QPen(Qt::NoPen), QBrush(сolorScene));
         previousPoint=event->scenePos();
 
         currentPath.append(event->scenePos()); //заполняю массив точек
@@ -85,6 +92,12 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event){
         tempFigure = item;
         break;
     }
+    case RombType: {
+        Romb *item = new Romb(event->scenePos());
+        item->setPos(event->pos());
+        tempFigure = item;
+        break;
+    }
     default:{
         Square *item = new Square(event->scenePos());
         item->setPos(event->pos());
@@ -99,33 +112,37 @@ void CustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
     if (m_isDrawingRude && currentLineDrawingRude) {
         // Завершаем рисование линии
         currentLineDrawingRude = nullptr;
+
+        rudeLinePointVector.append(event->scenePos());
+        PathElement line(rudeLinePointVector, сolorScene, thicknessScene);
+        drawRudeLines.append(line);
+        rudeLinePointVector.clear();
         return; // не передаем дальше
     }
 
     if (m_isDrawingRender) {
-        paths.append(QPair(currentPath, drawingColor));
+        PathElement path(currentPath, сolorScene, thicknessScene);
+        paths.append(path);
         currentPath.clear();
     }
 
-    // Остальной код (если нужен)
     QGraphicsScene::mouseReleaseEvent(event);
 }
 
-void CustomGraphicsScene::setDrawingColor(const QColor& color) {
-    drawingColor = color;
+void CustomGraphicsScene::setColorScene(const QColor& color) {
+    сolorScene = color;
 }
-
-QString CustomGraphicsScene::serializePath(const QPair<QVector<QPointF>, QColor>& path) {
-    //QString result;
-    //for (const auto& path : paths) {
+void CustomGraphicsScene::setThicknessScene(int thickness) {
+    thicknessScene = thickness;
+}
+QString CustomGraphicsScene::serializePath(const PathElement& path) {
     QStringList pointStrings;
     pointStrings << "Path";
-    pointStrings << path.second.name(); // цвет в HEX
-    for (const QPointF& pt : path.first) {
+    pointStrings << path.color.name(); // цвет в HEX
+    pointStrings << QString::number(path.thickness);
+    for (const QPointF& pt : path.pathPoints) {
         pointStrings << QString("%1,%2").arg(pt.x()).arg(pt.y());
     }
-    //result += pointStrings.join(";") + "\n"; // разделяем точки запятой, а пути — новой строкой
-    //}
     return pointStrings.join(";");
 }
 
@@ -133,8 +150,42 @@ QVector<QPointF> CustomGraphicsScene::deserializePath(QStringList parts) {
     QVector<QPointF> pathPoints;
     // parts[0] = "Path"
     // parts[1] = цвет
+    // parts[2] = толщина
     // остальные = точки
-    for (int i = 2; i < parts.size(); ++i) {
+    for (int i = 3; i < parts.size(); ++i) {
+        QStringList coords = parts[i].split(',', Qt::SkipEmptyParts);
+        if (coords.size() == 2) {
+            bool okX, okY;
+            double x = coords[0].toDouble(&okX);
+            double y = coords[1].toDouble(&okY);
+            if (okX && okY) {
+                pathPoints.append(QPointF(x, y));
+            }
+        }
+    }
+    return pathPoints;
+}
+
+QString CustomGraphicsScene::serializeCurve (const PathElement& line) { //метод сериализации кривой
+    QStringList linesList;
+    // linesList[0] = "Curve"
+    // linesList[1] = color
+    // linesList[2] = thickness
+    linesList << "Curve";
+    linesList << line.color.name(); // цвет в HEX
+    linesList << QString::number(line.thickness);
+    // Для каждой линии в QVector, хранящем точки
+    for (const QPointF& pt : line.pathPoints) {
+        linesList << QString("%1,%2").arg(pt.x()).arg(pt.y());
+    }
+    return linesList.join(";");
+}
+
+QVector<QPointF> CustomGraphicsScene::deserializeCurve(QStringList parts) {
+    QVector<QPointF> pathPoints;
+    // parts[0] = "Curve"
+    // остальные = точки
+    for (int i = 1; i < parts.size(); ++i) {
         QStringList coords = parts[i].split(',', Qt::SkipEmptyParts);
         if (coords.size() == 2) {
             bool okX, okY;

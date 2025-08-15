@@ -4,9 +4,11 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QGraphicsEllipseItem>
 #include <QVector>
 #include "square.h"
 #include "triangle.h"
+#include "romb.h"
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -22,13 +24,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->setCacheMode(QGraphicsView::CacheBackground); // Кэш фона, избежание повторного рендеринга статичных элементов фона
     ui->graphicsView->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate); //Устанавливаем режим обновления области просмотра
 
-    ui->graphicsView->setStyleSheet("QGraphicsView { border: 4px solid green }");
+    ui->graphicsView->setStyleSheet("QGraphicsView { background-color: white; border: 4px solid green }");
 
     scene->setSceneRect(180,100,800,500);
 
     timer = new QTimer();
     connect(timer, &QTimer::timeout, this, &MainWindow::slotTimer);
     timer->start(100);
+
+    currentThickness = 5;
 }
 
 MainWindow::~MainWindow()
@@ -51,7 +55,12 @@ void MainWindow::on_squareButton_clicked()
     scene->setDrawingRenderMode(false);
     scene->setTypeFigure(CustomGraphicsScene::SquareType);
 }
-
+void MainWindow::on_rombButton_clicked()
+{
+    scene->setDrawingRudeMode(false);
+    scene->setDrawingRenderMode(false);
+    scene->setTypeFigure(CustomGraphicsScene::RombType);
+}
 
 void MainWindow::on_triangleButton_clicked()
 {
@@ -74,9 +83,17 @@ void MainWindow::on_chooseColorButton_clicked() {
     if (color.isValid()) {
         currentColor = color;
         // Передавайте цвет сцене или фигурам
-        scene->setDrawingColor(currentColor);
+        scene->setColorScene(currentColor);
     }
 }
+void MainWindow::on_chooseThicknessButton_clicked() {
+    ChooseThicknessDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        currentThickness = dialog.getThickness();
+        scene->setThicknessScene(currentThickness);
+    }
+}
+
 void MainWindow::on_saveButton_clicked() {
     QList<QGraphicsItem*> items = scene->items();
     QList<Figure*> figures;
@@ -97,6 +114,9 @@ void MainWindow::on_saveButton_clicked() {
         }
         for (auto path : scene->paths) {
         out << scene->serializePath(path)<<"\n";
+        }
+        for (auto line : scene->drawRudeLines) {
+            out << scene->serializeCurve(line)<<"\n";
         }
         file.close();
     } else {
@@ -127,16 +147,16 @@ void MainWindow::on_openButton_clicked() {
 
         QString type = parts[0];
 
-        if (type == "Square" && parts.size() == 6) {
+        if (type == "Square" && parts.size() == 7) {
             // Формат: Square;startX;startY;width;height;colorHex
-            bool ok1, ok2, ok3, ok4;
+            bool ok1, ok2, ok3, ok4, ok5;
             double startX = parts[1].toDouble(&ok1);
             double startY = parts[2].toDouble(&ok2);
             double width = parts[3].toDouble(&ok3);
             double height = parts[4].toDouble(&ok4);
             QString colorStr = parts[5];
-
-            if (ok1 && ok2 && ok3 && ok4) {
+            int thickness = parts[6].toInt(&ok5);
+            if (ok1 && ok2 && ok3 && ok4 && ok5) {
                 QPointF startPoint(startX, startY);
                 QPointF endPoint(startX + width, startY + height);
 
@@ -145,7 +165,8 @@ void MainWindow::on_openButton_clicked() {
                 // Устанавливаем точки явно, если нужно
                 square->setStartPoint(startPoint);
                 square->setEndPoint(endPoint);
-                square->setColor(QColor(colorStr));
+                square->setColorFigure(QColor(colorStr));
+                square->setThicknessFigure(thickness);
                 //scene->addItem(square);
                 itemsToAdd.append(square);
             }
@@ -155,15 +176,59 @@ void MainWindow::on_openButton_clicked() {
                 //scene->addItem(triangle);
                 itemsToAdd.append(triangle);
             }
-        } else if (type == "Path" && parts.size() >= 3) {
+        } else if (type == "Romb") {
+                Romb* romb = Romb::deserialize(line);
+                if (romb) {
+                    itemsToAdd.append(romb);
+                }
+        } else if (type == "Path" && parts.size() > 3) {
             QString colorStr = parts[1];
             QColor color(colorStr);
+            int thickness = parts[2].toInt();
             QVector<QPointF> pathPoints = scene->deserializePath(parts);
+            // Создаем список для хранения эллипсов
+            QVector<QGraphicsEllipseItem*> ellipses;
             for (auto point : pathPoints) {
-                scene->addEllipse(point.x()-5,
-                           point.y()-5,
-                           10,10,
-                           QPen(Qt::NoPen), QBrush(color));
+                // Создаем эллипс, НЕ добавляем его сразу
+                QGraphicsEllipseItem* ellipse = new QGraphicsEllipseItem(
+                    point.x() - thickness/2,
+                    point.y() - thickness/2,
+                    thickness,
+                    thickness
+                    );
+                // Устанавливаем кисть и перо
+                ellipse->setPen(Qt::NoPen);
+                ellipse->setBrush(QBrush(color));
+                // Не добавляем в сцену тут
+                ellipses.append(ellipse);
+            }
+            for (auto* item : ellipses) {
+                itemsToAdd.append(item);
+            }
+        } else if (type == "Curve" && parts.size() >= 2) {
+            QString colorStr = parts[1];
+            QColor color(colorStr);
+            int thickness = parts[2].toInt();
+            QVector<QPointF> pathPoints = scene->deserializeCurve(parts);
+            QVector<QGraphicsLineItem*> lines;
+
+            for (int i = 0; i < pathPoints.size() - 1; ++i) {
+                QPointF point1 = pathPoints[i];
+                QPointF point2 = pathPoints[i + 1];
+
+                QGraphicsLineItem* line = new QGraphicsLineItem(QLineF(point1, point2));
+                line->setPen(QPen(color, thickness)); // задаем цвет и толщину линии
+                // Можно установить перо и кисть, если нужно
+                // line->setPen(QPen(Qt::red, 2));
+                // line->setBrush(Qt::NoBrush);
+
+                // Не добавляем в сцену тут, только создаем
+                lines.append(line);
+            }
+
+            // Теперь добавим эти линии на сцену
+            for (auto* lineItem : lines) {
+                scene->addItem(lineItem);
             }
         }
         // Аналогично для других фигур

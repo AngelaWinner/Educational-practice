@@ -115,17 +115,30 @@
      <string>open</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="fillButton">
+   <widget class="QPushButton" name="chooseThicknessButton">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>360</y>
+      <width>131</width>
+      <height>29</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Choose thickness</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="rombButton">
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>360</y>
+      <y>40</y>
       <width>83</width>
       <height>29</height>
      </rect>
     </property>
     <property name="text">
-     <string>fill</string>
+     <string>romb</string>
     </property>
    </widget>
   </widget>

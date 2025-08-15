@@ -14,7 +14,7 @@ Square::Square(QPointF point, QObject *parent) : Figure(point, parent) {
 Square::~Square(){}
 //реализуем метод отрисовки
 void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
-    painter->setPen(QPen(getColor(), 2));
+    painter->setPen(QPen(getColorFigure(), getThicknessFigure()));
     QRectF rect(endPoint().x() > startPoint().x() ? startPoint().x() : endPoint().x(),
                 endPoint().y() > startPoint().y() ? startPoint().y() : endPoint().y(),
                 qAbs(endPoint().x() - startPoint().x()),
@@ -27,10 +27,11 @@ void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 QString Square::serialize() const {
     double width = qAbs(endPoint().x() - startPoint().x());
     double height = qAbs(endPoint().y() - startPoint().y());
-    return QString("Square;%1;%2;%3;%4;%5")
+    return QString("Square;%1;%2;%3;%4;%5;%6")
         .arg(startPoint().x())
         .arg(startPoint().y())
         .arg(width)
         .arg(height)
-        .arg(getColor().name());
+        .arg(getColorFigure().name())
+        .arg(getThicknessFigure());
 }

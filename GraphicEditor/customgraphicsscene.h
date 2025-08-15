@@ -3,6 +3,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include "figure.h"
+#include "pathelement.h"
 
 class CustomGraphicsScene : public QGraphicsScene
 {
@@ -17,7 +18,7 @@ public:
     int typeFigure() const; //возвращение текущего типа
     void setTypeFigure(const int type); //установка текущего типа
     enum FigureTypes{
-        SquareType, TriangleType
+        SquareType, TriangleType, RombType
     };
 
     void setDrawingRenderMode(bool enabled); // включение/выключение режима плавного рисования
@@ -25,14 +26,22 @@ public:
     void setDrawingRudeMode(bool enabled); // включение/выключение режима жесткого рисования
     bool isDrawingRudeMode() const;
 
-    void setDrawingColor(const QColor& color);
-    QColor drawingColor = Qt::red;
+    void setColorScene(const QColor& color);
+    QColor сolorScene = Qt::red;
 
-    //QPointF pointOfPath;
     QVector<QPointF> currentPath;
-    QVector<QPair<QVector<QPointF>, QColor>> paths; // все сохранённые пути
-    QString serializePath(const QPair<QVector<QPointF>, QColor>& path);
+    QVector<PathElement> paths; // все сохранённые пути
+    QString serializePath(const PathElement& path); //PathElement = QPair<QVector<QPointF>, QColor, int>
     QVector<QPointF> deserializePath(QStringList parts);
+
+    QVector<QPointF> rudeLinePointVector;
+    //QVector<QVector<QPointF>> drawRudeLines;
+    QVector<PathElement> drawRudeLines;
+    //QString serializeCurve (const QVector<QPointF>& curve);
+    QString serializeCurve (const PathElement& curve);
+    QVector<QPointF> deserializeCurve(QStringList parts);
+
+    void setThicknessScene(int thickness);
 signals:
     void typeFigureChanged(); //сигнал об изменении типа текущей фигуры
 private:
@@ -45,6 +54,7 @@ private:
     void mousePressEvent(QGraphicsSceneMouseEvent* event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+    int thicknessScene;
 };
 
 #endif // CUSTOMGRAPHICSSCENE_H

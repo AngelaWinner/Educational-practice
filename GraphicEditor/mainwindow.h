@@ -5,6 +5,7 @@
 #include <QGraphicsScene>
 #include <QTimer>
 #include "customgraphicsscene.h"
+#include "choosethicknessdialog.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -25,15 +26,18 @@ private:
     QTimer* timer;
     void resizeEvent(QResizeEvent* event);
     QColor currentColor = Qt::red;
+    int currentThickness;
 private slots:
     void slotTimer();
 
     void on_squareButton_clicked();
     void on_triangleButton_clicked();
+    void on_rombButton_clicked();
     void on_paintRudeByMouseButton_clicked();
     void on_paintRenderByMouseButton_clicked();
     void on_chooseColorButton_clicked();
     void on_saveButton_clicked();
     void on_openButton_clicked();
+    void on_chooseThicknessButton_clicked();
 };
 #endif // MAINWINDOW_H
