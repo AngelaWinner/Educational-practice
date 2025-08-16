@@ -25,6 +25,20 @@ void CustomGraphicsScene::setDrawingRudeMode(bool enabled) {
 bool CustomGraphicsScene::isDrawingRudeMode() const {
     return m_isDrawingRude;
 }
+void CustomGraphicsScene::setFillColorScene(QColor fillColor) {
+    fillColorScene = fillColor;
+    fillColorFlagScene = true;
+}
+void CustomGraphicsScene::setBorderColorScene(QColor borderColor) {
+    borderColorScene = borderColor;
+    borderColorFlagScene = true;
+}
+void CustomGraphicsScene::changeFillFlagScene(bool TF) {
+    fillColorFlagScene = TF;
+}
+void CustomGraphicsScene::changeBorderFlagScene(bool TF) {
+    borderColorFlagScene = TF;
+}
 void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
     if (m_isDrawingRude && currentLineDrawingRude) {
         // Обновляем конечную точку линии
@@ -48,6 +62,12 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
     if (tempFigure) {
         tempFigure->setColorFigure(сolorScene);
         tempFigure->setThicknessFigure(thicknessScene);
+
+        if (fillColorFlagScene && borderColorFlagScene) {
+            tempFigure->setFillColorFigure(fillColorScene);
+            tempFigure->setBorderColorFigure(borderColorScene);
+        }
+
         //устанавливаем конечную координату положения мыши в текущую отрисовываемую фигуру
         tempFigure->setEndPoint(event->scenePos());
         //обновляем содержимое сцены

@@ -28,6 +28,14 @@ public:
     int getThicknessFigure() const;
     void setThicknessFigure(const int& thickness);
     virtual QString serialize() const = 0; // чисто виртуальный метод
+
+    void setFillColorFigure(QColor fillColor);
+    void setBorderColorFigure(QColor borderColor);
+    QColor getFillColorFigure() const;
+    QColor getBorderColorFigure() const;
+
+    bool fillColorSetted = false;
+    bool borderColorSetted = false;
 signals:
     void pointChanged();
 private:
@@ -36,6 +44,8 @@ private:
     QRectF boundingRect() const; //область, в которой содержится фигура
     QColor m_color = Qt::black;
     int m_thickness = 2;
+    QColor m_fillColor;
+    QColor m_borderColor;
 public slots:
     void updateRomb();
 };

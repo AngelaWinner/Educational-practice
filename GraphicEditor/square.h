@@ -11,6 +11,7 @@ class Square : public Figure
 public:
     explicit Square(QPointF point, QObject *parent = 0);
     ~Square();
+    static Square* deserialize(const QStringList& parts);
 private:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
     QString serialize() const override;

@@ -53,3 +53,19 @@ void Figure::setThicknessFigure(const int& thickness) {
     m_thickness = thickness;
     update(); // перерисовать
 }
+
+void Figure::setFillColorFigure(QColor fillColor) {
+    m_fillColor = fillColor;
+    fillColorSetted = true;
+}
+void Figure::setBorderColorFigure(QColor borderColor) {
+    m_borderColor = borderColor;
+    borderColorSetted = true;
+}
+
+QColor Figure::getFillColorFigure() const {
+    return m_fillColor;
+}
+QColor Figure::getBorderColorFigure() const {
+    return m_borderColor;
+}

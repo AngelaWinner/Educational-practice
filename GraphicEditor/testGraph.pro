@@ -12,6 +12,7 @@ SOURCES += \
     choosethicknessdialog.cpp \
     customgraphicsscene.cpp \
     figure.cpp \
+    filldialog.cpp \
     main.cpp \
     mainwindow.cpp \
     pathelement.cpp \
@@ -23,6 +24,7 @@ HEADERS += \
     choosethicknessdialog.h \
     customgraphicsscene.h \
     figure.h \
+    filldialog.h \
     mainwindow.h \
     pathelement.h \
     romb.h \

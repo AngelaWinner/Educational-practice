@@ -27,6 +27,10 @@ private:
     void resizeEvent(QResizeEvent* event);
     QColor currentColor = Qt::red;
     int currentThickness;
+    //bool currentFillMode = false;
+    //QColor currentFillColor = Qt::blue; // или цвет, выбранный пользователем
+    QColor currentFillColor;
+    QColor currentBorderColor;
 private slots:
     void slotTimer();
 
@@ -38,6 +42,8 @@ private slots:
     void on_chooseColorButton_clicked();
     void on_saveButton_clicked();
     void on_openButton_clicked();
+    void on_noFillButton_clicked();
+    void on_fillButton_clicked();
     void on_chooseThicknessButton_clicked();
 };
 #endif // MAINWINDOW_H

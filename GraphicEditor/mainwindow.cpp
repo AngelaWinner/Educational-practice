@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "filldialog.h"
 #include "ui_mainwindow.h"
 #include <QColorDialog>
 #include <QFile>
@@ -9,6 +10,7 @@
 #include "square.h"
 #include "triangle.h"
 #include "romb.h"
+#include <QDebug>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -33,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     timer->start(100);
 
     currentThickness = 5;
+
 }
 
 MainWindow::~MainWindow()
@@ -93,6 +96,19 @@ void MainWindow::on_chooseThicknessButton_clicked() {
         scene->setThicknessScene(currentThickness);
     }
 }
+void MainWindow::on_fillButton_clicked() {
+    FillDialog dialog(this);
+    if (dialog.exec() == QDialog::Accepted) {
+        currentFillColor = dialog.getFillColor();
+        currentBorderColor = dialog.getBorderColor();
+        scene->setFillColorScene(currentFillColor);
+        scene->setBorderColorScene(currentBorderColor);
+    }
+}
+void MainWindow::on_noFillButton_clicked() {
+        scene->changeFillFlagScene(false);
+        scene->changeBorderFlagScene(false);
+}
 
 void MainWindow::on_saveButton_clicked() {
     QList<QGraphicsItem*> items = scene->items();
@@ -138,42 +154,19 @@ void MainWindow::on_openButton_clicked() {
     QVector<QGraphicsItem*> itemsToAdd; // контейнер для объектов
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
-
         if (line.isEmpty()) continue; // пропускаем пустые строки
-
         QStringList parts = line.split(';');
-
         if (parts.isEmpty()) continue;
-
         QString type = parts[0];
 
-        if (type == "Square" && parts.size() == 7) {
-            // Формат: Square;startX;startY;width;height;colorHex
-            bool ok1, ok2, ok3, ok4, ok5;
-            double startX = parts[1].toDouble(&ok1);
-            double startY = parts[2].toDouble(&ok2);
-            double width = parts[3].toDouble(&ok3);
-            double height = parts[4].toDouble(&ok4);
-            QString colorStr = parts[5];
-            int thickness = parts[6].toInt(&ok5);
-            if (ok1 && ok2 && ok3 && ok4 && ok5) {
-                QPointF startPoint(startX, startY);
-                QPointF endPoint(startX + width, startY + height);
-
-                // Создаем фигуру
-                Square* square = new Square(startPoint); // инициализация
-                // Устанавливаем точки явно, если нужно
-                square->setStartPoint(startPoint);
-                square->setEndPoint(endPoint);
-                square->setColorFigure(QColor(colorStr));
-                square->setThicknessFigure(thickness);
-                //scene->addItem(square);
+        if (type == "Square") {
+            Square* square = Square::deserialize(parts);
+            if (square) {
                 itemsToAdd.append(square);
             }
         } else if (type == "Triangle") {
             Triangle* triangle = Triangle::deserialize(line);
             if (triangle) {
-                //scene->addItem(triangle);
                 itemsToAdd.append(triangle);
             }
         } else if (type == "Romb") {

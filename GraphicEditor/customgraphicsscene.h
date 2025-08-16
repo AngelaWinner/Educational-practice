@@ -42,6 +42,11 @@ public:
     QVector<QPointF> deserializeCurve(QStringList parts);
 
     void setThicknessScene(int thickness);
+
+    void setFillColorScene(QColor fillColor);
+    void setBorderColorScene(QColor borderColor);
+    void changeFillFlagScene(bool TF);
+    void changeBorderFlagScene(bool TF);
 signals:
     void typeFigureChanged(); //сигнал об изменении типа текущей фигуры
 private:
@@ -55,6 +60,11 @@ private:
     void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
     int thicknessScene;
+    QColor fillColorScene;
+    QColor borderColorScene;
+
+    bool fillColorFlagScene = false;
+    bool borderColorFlagScene = true;
 };
 
 #endif // CUSTOMGRAPHICSSCENE_H
