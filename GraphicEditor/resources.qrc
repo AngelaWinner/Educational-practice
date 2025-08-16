@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/rec">
+        <file>images/Image.jpg</file>
+        <file>images/chooseColor.jpg</file>
+        <file>images/chooseThickness.jpg</file>
+        <file>images/exit.jpg</file>
+        <file>images/info.jpg</file>
+        <file>images/open.jpg</file>
+        <file>images/renderLine.jpg</file>
+        <file>images/rudeLine.jpg</file>
+        <file>images/save.jpg</file>
+    </qresource>
+</RCC>

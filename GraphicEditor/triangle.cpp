@@ -23,7 +23,7 @@ void Triangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, 
     Q_UNUSED(widget);
 }
 
-QString Triangle::serialize() const {
+QString Triangle::serializeText() const {
     if (fillColorSetted && borderColorSetted) {
         //Формат строки: Triangle;startX;startY;endX;endY;fillColor;borderColor;thickness
         return QString("Triangle;%1;%2;%3;%4;%5;%6;%7")
@@ -45,9 +45,28 @@ QString Triangle::serialize() const {
         .arg(getThicknessFigure());
 }
 
-Triangle* Triangle::deserialize(const QString& data) {
+void Triangle::serializeBin(QDataStream& out) const {
+    out << QString("Triangle");
+    if (fillColorSetted && borderColorSetted) {
+        out << QString("1"); //1 если два цвета, 0  если один
+    } else out << QString("0");
+
+    // Записываем начальные координаты
+    out << startPoint().x() << startPoint().y();
+    out << endPoint().x() << endPoint().y();
+    // Записываем цветовые параметры
+    if (fillColorSetted && borderColorSetted) {
+        out << getFillColorFigure().name()
+        << getBorderColorFigure().name();
+    } else {
+        out << getColorFigure().name();
+    }
+    // Записываем толщину линии
+    out << getThicknessFigure();
+}
+
+Triangle* Triangle::deserialize(const QStringList &parts) {
     // Формат строки: Triangle;startX;startY;endX;endY;colorHex;thickness
-    QStringList parts = data.split(';');
     if (parts.size() <=6 || parts.size() >=9 || parts[0] != "Triangle") {
         return nullptr;
     }
@@ -77,4 +96,29 @@ Triangle* Triangle::deserialize(const QString& data) {
         triangle->setThicknessFigure(thickness);
     }
     return triangle;
+}
+
+Triangle* Triangle::deserializeBin(QDataStream& in) {
+    QString value;
+    double startX, startY, endX, endY;
+    in>>value>>startX>>startY>>endX>>endY;
+
+    Triangle* triangle = new Triangle(QPointF(startX, startY));
+    triangle->setEndPoint(QPointF(endX, endY));
+    if (value == "1") {
+        QString fillColorStr, borderColorStr;
+        in>>fillColorStr>>borderColorStr;
+        triangle->setFillColorFigure(QColor(fillColorStr));
+        triangle->setBorderColorFigure(QColor(borderColorStr));
+    } else {
+        QString colorStr;
+        in>>colorStr;
+        triangle->setColorFigure(QColor(colorStr));
+    }
+    int thickness;
+    in>>thickness;
+    triangle->setThicknessFigure(thickness);
+    if (triangle) {
+        return triangle;
+    } else return nullptr;
 }

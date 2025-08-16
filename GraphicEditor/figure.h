@@ -27,7 +27,8 @@ public:
     QColor getColorFigure() const;
     int getThicknessFigure() const;
     void setThicknessFigure(const int& thickness);
-    virtual QString serialize() const = 0; // чисто виртуальный метод
+    virtual QString serializeText() const = 0;
+    virtual void serializeBin(QDataStream& out) const = 0;
 
     void setFillColorFigure(QColor fillColor);
     void setBorderColorFigure(QColor borderColor);
@@ -36,6 +37,9 @@ public:
 
     bool fillColorSetted = false;
     bool borderColorSetted = false;
+
+    void setZLayer(int zLayerNumber);
+    int getZLayer() const;
 signals:
     void pointChanged();
 private:
@@ -46,6 +50,7 @@ private:
     int m_thickness = 2;
     QColor m_fillColor;
     QColor m_borderColor;
+    int m_zLayer;
 public slots:
     void updateRomb();
 };

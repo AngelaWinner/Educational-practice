@@ -69,3 +69,9 @@ QColor Figure::getFillColorFigure() const {
 QColor Figure::getBorderColorFigure() const {
     return m_borderColor;
 }
+void Figure::setZLayer(int zLayerNumber) {
+    m_zLayer = zLayerNumber;
+}
+int Figure::getZLayer() const{
+    return m_zLayer;
+}

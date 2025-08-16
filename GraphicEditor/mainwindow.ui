@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1100</width>
-    <height>755</height>
+    <height>785</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,154 +18,159 @@
     <property name="geometry">
      <rect>
       <x>180</x>
-      <y>100</y>
+      <y>60</y>
       <width>890</width>
       <height>580</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="squareButton">
+   <widget class="QPushButton" name="exitButton">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>80</y>
-      <width>83</width>
+      <x>890</x>
+      <y>650</y>
+      <width>181</width>
       <height>29</height>
      </rect>
     </property>
     <property name="text">
-     <string>square</string>
+     <string>Закрыть приложение</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="triangleButton">
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>120</y>
-      <width>83</width>
-      <height>29</height>
+      <x>10</x>
+      <y>110</y>
+      <width>160</width>
+      <height>471</height>
      </rect>
     </property>
-    <property name="text">
-     <string>triangle</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="paintRudeByMouseButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>160</y>
-      <width>151</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>paintRudeByMouse</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="paintRenderByMouseButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>200</y>
-      <width>151</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>paintRenderByMouse</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="chooseColorButton">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>240</y>
-      <width>111</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Choose color</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="saveButton">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>280</y>
-      <width>83</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>save</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="openButton">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>320</y>
-      <width>83</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>open</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="chooseThicknessButton">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>360</y>
-      <width>131</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Choose thickness</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="rombButton">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>40</y>
-      <width>83</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>romb</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="fillButton">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>390</y>
-      <width>83</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>fill</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="noFillButton">
-    <property name="geometry">
-     <rect>
-      <x>30</x>
-      <y>430</y>
-      <width>83</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>no fill</string>
-    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QPushButton" name="openButton">
+       <property name="text">
+        <string>Открыть</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Сохранить</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="rombButton">
+       <property name="text">
+        <string>Ромб</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="squareButton">
+       <property name="text">
+        <string>Прямоугольник</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="triangleButton">
+       <property name="text">
+        <string>Треугольник</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="ellipseButton">
+       <property name="text">
+        <string>Эллипс</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="paintRudeByMouseButton">
+       <property name="text">
+        <string>Рисование кривой</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="paintRenderByMouseButton">
+       <property name="text">
+        <string>Рисование мышью</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="chooseColorButton">
+       <property name="text">
+        <string>Выбрать цвет</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="chooseThicknessButton">
+       <property name="text">
+        <string>Выбрать толщину</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="fillButton">
+       <property name="text">
+        <string>Заливка</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="noFillButton">
+       <property name="text">
+        <string>Отменить заливку</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

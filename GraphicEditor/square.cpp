@@ -24,28 +24,57 @@ void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(widget);
 }
 
-QString Square::serialize() const {
+QString Square::serializeText() const {
     double width = qAbs(endPoint().x() - startPoint().x());
     double height = qAbs(endPoint().y() - startPoint().y());
 
-    if (fillColorSetted && borderColorSetted) {
-        return QString("Square;%1;%2;%3;%4;%5;%6;%7")
+    if(fillColorSetted && borderColorSetted) {
+            return QString("Square;%1;%2;%3;%4;%5;%6;%7")
+                .arg(startPoint().x())
+                .arg(startPoint().y())
+                .arg(width)
+                .arg(height)
+                .arg(getFillColorFigure().name())
+                .arg(getBorderColorFigure().name())
+                .arg(getThicknessFigure());
+    } else
+        return QString("Square;%1;%2;%3;%4;%5;%6")
             .arg(startPoint().x())
             .arg(startPoint().y())
             .arg(width)
             .arg(height)
-            .arg(getFillColorFigure().name())
-            .arg(getBorderColorFigure().name())
+            .arg(getColorFigure().name())
             .arg(getThicknessFigure());
-    }
-    return QString("Square;%1;%2;%3;%4;%5;%6")
-        .arg(startPoint().x())
-        .arg(startPoint().y())
-        .arg(width)
-        .arg(height)
-        .arg(getColorFigure().name())
-        .arg(getThicknessFigure());
 }
+
+void Square::serializeBin(QDataStream& out) const {
+    out << QString("Square");
+    if (fillColorSetted && borderColorSetted) {
+        out << QString("1");
+    } else out << QString("0");
+
+    // Записываем начальные координаты
+    out << startPoint().x() << startPoint().y();
+
+    // Вычисляем размеры
+    double width = qAbs(endPoint().x() - startPoint().x());
+    double height = qAbs(endPoint().y() - startPoint().y());
+
+    // Записываем размеры
+    out << width << height;
+
+    // Записываем цветовые параметры
+    if (fillColorSetted && borderColorSetted) {
+        out << getFillColorFigure().name()
+        << getBorderColorFigure().name();
+    } else {
+        out << getColorFigure().name();
+    }
+
+    // Записываем толщину линии
+    out << getThicknessFigure();
+}
+
 
 Square* Square::deserialize(const QStringList& parts) {
     if (parts[0] != "Square" || parts.size() < 7 || parts.size() > 8) return nullptr;
@@ -60,7 +89,6 @@ Square* Square::deserialize(const QStringList& parts) {
     // Создаем фигуру
     Square* square = new Square(startPoint); // инициализация
     // Устанавливаем точки явно, если нужно
-    square->setStartPoint(startPoint);
     square->setEndPoint(endPoint);
 
     if (parts.size()==8) {
@@ -81,3 +109,33 @@ Square* Square::deserialize(const QStringList& parts) {
     }
     return square;
 }
+
+
+Square* Square::deserializeBin(QDataStream& in) {
+    QString value;
+    double startX, startY, width, height;
+    in>>value>>startX>>startY>>width>>height;
+    QPointF startPoint(startX, startY);
+    QPointF endPoint(startX + width, startY + height);
+    // Создаем фигуру
+    Square* square = new Square(startPoint); // инициализация
+    // Устанавливаем точки явно, если нужно
+    square->setEndPoint(endPoint);
+    if (value == "1") {
+        QString fillColorStr, borderColorStr;
+        in>>fillColorStr>>borderColorStr;
+        square->setFillColorFigure(QColor(fillColorStr));
+        square->setBorderColorFigure(QColor(borderColorStr));
+    } else {
+        QString colorStr;
+        in>>colorStr;
+        square->setColorFigure(QColor(colorStr));
+    }
+    int thickness;
+    in>>thickness;
+    square->setThicknessFigure(thickness);
+    if (square) {
+        return square;
+    } else return nullptr;
+}
+

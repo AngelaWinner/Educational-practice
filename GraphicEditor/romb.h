@@ -11,10 +11,12 @@ class Romb : public Figure
 public:
     explicit Romb(QPointF point, QObject *parent = 0);
     ~Romb();
-    static Romb* deserialize(const QString &data);
+    static Romb* deserialize(const QStringList &parts);
+    static Romb* deserializeBin(QDataStream& in);
 private:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    QString serialize() const override;
+    QString serializeText() const override;
+    void serializeBin(QDataStream& out) const override;
 };
 
 #endif // ROMB_H

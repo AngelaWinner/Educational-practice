@@ -18,7 +18,7 @@ public:
     int typeFigure() const; //возвращение текущего типа
     void setTypeFigure(const int type); //установка текущего типа
     enum FigureTypes{
-        SquareType, TriangleType, RombType
+        SquareType, TriangleType, RombType, EllipseType
     };
 
     void setDrawingRenderMode(bool enabled); // включение/выключение режима плавного рисования
@@ -35,11 +35,13 @@ public:
     QVector<QPointF> deserializePath(QStringList parts);
 
     QVector<QPointF> rudeLinePointVector;
-    //QVector<QVector<QPointF>> drawRudeLines;
     QVector<PathElement> drawRudeLines;
-    //QString serializeCurve (const QVector<QPointF>& curve);
     QString serializeCurve (const PathElement& curve);
     QVector<QPointF> deserializeCurve(QStringList parts);
+
+    //тут должен быть массив, в котором будут храниться все фигуры (square, triangle, romb, ellipse), как это сделать?
+    //Ведь вся реализация в сцене это создание tempFigure и указание свойств, таких ка цвета, толщина и слой???
+    QVector<Figure*> allFigureObjects; // или QList<QGraphicsItem*>
 
     void setThicknessScene(int thickness);
 
@@ -47,6 +49,9 @@ public:
     void setBorderColorScene(QColor borderColor);
     void changeFillFlagScene(bool TF);
     void changeBorderFlagScene(bool TF);
+
+    int getZCounter() const;
+    void setZCounter(int counter);
 signals:
     void typeFigureChanged(); //сигнал об изменении типа текущей фигуры
 private:
@@ -65,6 +70,8 @@ private:
 
     bool fillColorFlagScene = false;
     bool borderColorFlagScene = true;
+
+    int zCounter = 0;
 };
 
 #endif // CUSTOMGRAPHICSSCENE_H

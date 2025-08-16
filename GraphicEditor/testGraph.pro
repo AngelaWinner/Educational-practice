@@ -11,8 +11,10 @@ CONFIG += c++17
 SOURCES += \
     choosethicknessdialog.cpp \
     customgraphicsscene.cpp \
+    ellipse.cpp \
     figure.cpp \
     filldialog.cpp \
+    infodialog.cpp \
     main.cpp \
     mainwindow.cpp \
     pathelement.cpp \
@@ -23,8 +25,10 @@ SOURCES += \
 HEADERS += \
     choosethicknessdialog.h \
     customgraphicsscene.h \
+    ellipse.h \
     figure.h \
     filldialog.h \
+    infodialog.h \
     mainwindow.h \
     pathelement.h \
     romb.h \
@@ -38,3 +42,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc

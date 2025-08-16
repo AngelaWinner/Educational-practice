@@ -2,6 +2,7 @@
 #include "triangle.h"
 #include "square.h"
 #include "romb.h"
+#include "ellipse.h"
 
 CustomGraphicsScene::CustomGraphicsScene(QObject* parent) : QGraphicsScene(parent) {
     thicknessScene = 2;
@@ -63,6 +64,8 @@ void CustomGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
         tempFigure->setColorFigure(сolorScene);
         tempFigure->setThicknessFigure(thicknessScene);
 
+
+
         if (fillColorFlagScene && borderColorFlagScene) {
             tempFigure->setFillColorFigure(fillColorScene);
             tempFigure->setBorderColorFigure(borderColorScene);
@@ -118,6 +121,12 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event){
         tempFigure = item;
         break;
     }
+    case EllipseType: {
+        Ellipse *item = new Ellipse(event->scenePos());
+        item->setPos(event->pos());
+        tempFigure = item;
+        break;
+    }
     default:{
         Square *item = new Square(event->scenePos());
         item->setPos(event->pos());
@@ -125,7 +134,10 @@ void CustomGraphicsScene::mousePressEvent(QGraphicsSceneMouseEvent* event){
         break;
     }
     }
+    zCounter++;
+    tempFigure->setZLayer(zCounter);
     this->addItem(tempFigure);
+    allFigureObjects.append(tempFigure);
 }
 
 void CustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
@@ -134,14 +146,16 @@ void CustomGraphicsScene::mouseReleaseEvent(QGraphicsSceneMouseEvent* event) {
         currentLineDrawingRude = nullptr;
 
         rudeLinePointVector.append(event->scenePos());
-        PathElement line(rudeLinePointVector, сolorScene, thicknessScene);
+        zCounter++;
+        PathElement line(rudeLinePointVector, сolorScene, thicknessScene, zCounter);
         drawRudeLines.append(line);
         rudeLinePointVector.clear();
         return; // не передаем дальше
     }
 
     if (m_isDrawingRender) {
-        PathElement path(currentPath, сolorScene, thicknessScene);
+        zCounter++;
+        PathElement path(currentPath, сolorScene, thicknessScene, zCounter);
         paths.append(path);
         currentPath.clear();
     }
@@ -217,4 +231,11 @@ QVector<QPointF> CustomGraphicsScene::deserializeCurve(QStringList parts) {
         }
     }
     return pathPoints;
+}
+
+int CustomGraphicsScene:: getZCounter() const{
+    return zCounter;
+}
+void CustomGraphicsScene:: setZCounter(int counter) {
+    zCounter = counter;
 }

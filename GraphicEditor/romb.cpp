@@ -27,7 +27,7 @@ void Romb::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWid
     Q_UNUSED(widget);
 }
 
-QString Romb::serialize() const {
+QString Romb::serializeText() const {
     // Формат: Romb;startX;startY;endX;endY;colorHex;thickness
     if (fillColorSetted && borderColorSetted) {
         //Формат строки: Romb;startX;startY;endX;endY;fillColor;borderColor;thickness
@@ -50,9 +50,28 @@ QString Romb::serialize() const {
         .arg(getThicknessFigure());
 }
 
-Romb* Romb::deserialize(const QString& data) {
-    // Формат строки: Triangle;startX;startY;endX;endY;colorHex;thickness
-    QStringList parts = data.split(';');
+void Romb::serializeBin(QDataStream& out) const {
+    out << QString("Romb");
+    if (fillColorSetted && borderColorSetted) {
+        out << QString("1"); //1 если два цвета, 0  если один
+    } else out << QString("0");
+
+    // Записываем начальные координаты
+    out << startPoint().x() << startPoint().y();
+    out << endPoint().x() << endPoint().y();
+    // Записываем цветовые параметры
+    if (fillColorSetted && borderColorSetted) {
+        out << getFillColorFigure().name()
+        << getBorderColorFigure().name();
+    } else {
+        out << getColorFigure().name();
+    }
+    // Записываем толщину линии
+    out << getThicknessFigure();
+}
+
+Romb* Romb::deserialize(const QStringList &parts) {
+    // Формат строки: Romb;startX;startY;endX;endY;colorHex;thickness
     if (parts.size() <=6 || parts.size() >=9 || parts[0] != "Romb") {
         return nullptr;
     }
@@ -82,4 +101,29 @@ Romb* Romb::deserialize(const QString& data) {
         romb->setThicknessFigure(thickness);
     }
     return romb;
+}
+
+Romb* Romb::deserializeBin(QDataStream& in) {
+    QString value;
+    double startX, startY, endX, endY;
+    in>>value>>startX>>startY>>endX>>endY;
+
+    Romb* romb = new Romb(QPointF(startX, startY));
+    romb->setEndPoint(QPointF(endX, endY));
+    if (value == "1") {
+        QString fillColorStr, borderColorStr;
+        in>>fillColorStr>>borderColorStr;
+        romb->setFillColorFigure(QColor(fillColorStr));
+        romb->setBorderColorFigure(QColor(borderColorStr));
+    } else {
+        QString colorStr;
+        in>>colorStr;
+        romb->setColorFigure(QColor(colorStr));
+    }
+    int thickness;
+    in>>thickness;
+    romb->setThicknessFigure(thickness);
+    if (romb) {
+        return romb;
+    } else return nullptr;
 }
