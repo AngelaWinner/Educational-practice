@@ -25,8 +25,8 @@ void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 }
 
 QString Square::serializeText() const {
-    double width = qAbs(endPoint().x() - startPoint().x());
-    double height = qAbs(endPoint().y() - startPoint().y());
+    double width = (endPoint().x() - startPoint().x());
+    double height = (endPoint().y() - startPoint().y());
 
     if(fillColorSetted && borderColorSetted) {
             return QString("Square;%1;%2;%3;%4;%5;%6;%7")
@@ -57,8 +57,9 @@ void Square::serializeBin(QDataStream& out) const {
     out << startPoint().x() << startPoint().y();
 
     // Вычисляем размеры
-    double width = qAbs(endPoint().x() - startPoint().x());
-    double height = qAbs(endPoint().y() - startPoint().y());
+    double width = (endPoint().x() - startPoint().x()); //сделала не по модулю, так как если начальная точка дальше конечной
+    //относительно начала координат, то рисуется неверный прямоугольник
+    double height = (endPoint().y() - startPoint().y());
 
     // Записываем размеры
     out << width << height;
@@ -116,7 +117,7 @@ Square* Square::deserializeBin(QDataStream& in) {
     double startX, startY, width, height;
     in>>value>>startX>>startY>>width>>height;
     QPointF startPoint(startX, startY);
-    QPointF endPoint(startX + width, startY + height);
+    QPointF endPoint(startX + width, startY + height); //Замечание! я всегда думаю, что конечая точка дальше начальной, поэтому прибавляю. А как контрить то, что конечная ближе к 0.0 чер начальная ?
     // Создаем фигуру
     Square* square = new Square(startPoint); // инициализация
     // Устанавливаем точки явно, если нужно

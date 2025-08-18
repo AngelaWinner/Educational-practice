@@ -238,7 +238,7 @@ void MainWindow::on_saveButton_clicked() {
         QFile file(fileName);
         if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
             QTextStream out(&file);
-            for (int layer = 1; layer <= scene->getZCounter(); ++layer) {
+            for (int layer = 0; layer <= scene->getZCounter(); ++layer) {
                 for (auto figure : scene->allFigureObjects) {
                     if (figure && figure->getZLayer() == layer) {
                         out << figure->serializeText() << "\n";
@@ -270,7 +270,7 @@ void MainWindow::on_saveButton_clicked() {
         if (file.open(QIODevice::WriteOnly)) {
             QDataStream out(&file);
 
-            for (int layer = 1; layer <= scene->getZCounter(); ++layer) {
+            for (int layer = 0; layer <= scene->getZCounter(); ++layer) {
                 for (auto figure : scene->allFigureObjects) {
                     if (figure && figure->getZLayer() == layer) {
                         figure->serializeBin(out);
@@ -278,12 +278,12 @@ void MainWindow::on_saveButton_clicked() {
                 }
                 for (auto path : scene->paths) {
                     if (path.layerZ == layer) {
-                        out << scene->serializePath(path) << "\n";
+                        scene->serializePathBin(path, out);
                     }
                 }
                 for (auto line : scene->drawRudeLines) {
                     if (line.layerZ == layer) {
-                        out << scene->serializeCurve(line) << "\n";
+                        scene->serializeCurveBin(line, out);
                     }
                 }
             }
@@ -464,13 +464,10 @@ void MainWindow::on_openButton_clicked() {
                     itemsToAdd.append(triangle);
                     scene->allFigureObjects.append(triangle);
                 }
-            }
-            /*
-            } else if (type == "Path" && parts.size() > 3) {
-                QString colorStr = parts[1];
-                QColor color(colorStr);
-                int thickness = parts[2].toInt();
-                QVector<QPointF> pathPoints = scene->deserializePath(parts);
+            } else if (type == "Path") {
+                QColor color;
+                int thickness;
+                QVector<QPointF> pathPoints = scene->deserializePathBin(in, color, thickness);
                 scene->paths.append(PathElement(pathPoints, color, thickness, scene->getZCounter()+1));
                 scene->setZCounter(scene->getZCounter()+1);
                 // Создаем список для хранения эллипсов
@@ -492,15 +489,13 @@ void MainWindow::on_openButton_clicked() {
                 for (auto* item : ellipses) {
                     itemsToAdd.append(item);
                 }
-            } else if (type == "Curve" && parts.size() >= 2) {
-                QString colorStr = parts[1];
-                QColor color(colorStr);
-                int thickness = parts[2].toInt();
-                QVector<QPointF> pathPoints = scene->deserializeCurve(parts);
+            } else if (type == "Curve") {
+                QColor color;
+                int thickness;
+                QVector<QPointF> pathPoints = scene->deserializeCurveBin(in, color, thickness);
                 QVector<QGraphicsLineItem*> lines;
                 scene->drawRudeLines.append(PathElement(pathPoints, color, thickness, scene->getZCounter()+1));
                 scene->setZCounter(scene->getZCounter()+1);
-
                 for (int i = 0; i < pathPoints.size() - 1; ++i) {
                     QPointF point1 = pathPoints[i];
                     QPointF point2 = pathPoints[i + 1];
@@ -509,13 +504,11 @@ void MainWindow::on_openButton_clicked() {
                     line->setPen(QPen(color, thickness)); // задаем цвет и толщину линии
                     lines.append(line);
                 }
-
-                // Теперь добавим эти линии на сцену
                 for (auto* lineItem : lines) {
                     itemsToAdd.append(lineItem);
                 }
             }
-            // Аналогично для других фигур */
+            // Аналогично для других фигур
         }
 
         // Теперь добавляем их на сцену в обратном порядке, чтобы сохранить слои

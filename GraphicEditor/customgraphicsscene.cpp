@@ -179,6 +179,58 @@ QString CustomGraphicsScene::serializePath(const PathElement& path) {
     }
     return pointStrings.join(";");
 }
+void CustomGraphicsScene::serializePathBin(const PathElement& path, QDataStream& out) {
+    out<<QString("Path");
+    out<<QString(path.color.name());
+    out<<path.thickness;
+    long long count = path.pathPoints.size();
+    out<<count;
+    for (const QPointF& pt : path.pathPoints) {
+        out << pt.x() << pt.y();
+    }
+}
+
+QVector<QPointF> CustomGraphicsScene::deserializePathBin(QDataStream& in, QColor& color, int& thickness) {
+    QVector<QPointF> pathPoints;
+    QString colorStr;
+    in>>colorStr;
+    color = QColor(colorStr);
+    in>>thickness;
+    long long count;
+    in>>count;
+    for (int i = 0; i < count; ++i) {
+        double x, y;
+        in>>x>>y;
+        pathPoints.append(QPointF(x, y));
+    }
+    return pathPoints;
+}
+void CustomGraphicsScene::serializeCurveBin(const PathElement& path, QDataStream& out) {
+    out<<QString("Curve");
+    out<<QString(path.color.name());
+    out<<path.thickness;
+    long long count = path.pathPoints.size();
+    out<<count;
+    for (const QPointF& pt : path.pathPoints) {
+        out << pt.x() << pt.y();
+    }
+}
+
+QVector<QPointF> CustomGraphicsScene::deserializeCurveBin(QDataStream& in, QColor& color, int& thickness) {
+    QVector<QPointF> pathPoints;
+    QString colorStr;
+    in>>colorStr;
+    color = QColor(colorStr);
+    in>>thickness;
+    long long count;
+    in>>count;
+    for (int i = 0; i < count; ++i) {
+        double x, y;
+        in>>x>>y;
+        pathPoints.append(QPointF(x, y));
+    }
+    return pathPoints;
+}
 
 QVector<QPointF> CustomGraphicsScene::deserializePath(QStringList parts) {
     QVector<QPointF> pathPoints;

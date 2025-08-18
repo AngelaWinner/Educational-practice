@@ -33,11 +33,15 @@ public:
     QVector<PathElement> paths; // все сохранённые пути
     QString serializePath(const PathElement& path); //PathElement = QPair<QVector<QPointF>, QColor, int>
     QVector<QPointF> deserializePath(QStringList parts);
+    void serializePathBin(const PathElement& path, QDataStream& out);
+    QVector<QPointF> deserializePathBin(QDataStream& in, QColor& color, int& thickness);
 
     QVector<QPointF> rudeLinePointVector;
     QVector<PathElement> drawRudeLines;
     QString serializeCurve (const PathElement& curve);
     QVector<QPointF> deserializeCurve(QStringList parts);
+    void serializeCurveBin(const PathElement& path, QDataStream& out);
+    QVector<QPointF> deserializeCurveBin(QDataStream& in, QColor& color, int& thickness);
 
     //тут должен быть массив, в котором будут храниться все фигуры (square, triangle, romb, ellipse), как это сделать?
     //Ведь вся реализация в сцене это создание tempFigure и указание свойств, таких ка цвета, толщина и слой???
