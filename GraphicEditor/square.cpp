@@ -57,8 +57,7 @@ void Square::serializeBin(QDataStream& out) const {
     out << startPoint().x() << startPoint().y();
 
     // Вычисляем размеры
-    double width = (endPoint().x() - startPoint().x()); //сделала не по модулю, так как если начальная точка дальше конечной
-    //относительно начала координат, то рисуется неверный прямоугольник
+    double width = (endPoint().x() - startPoint().x());
     double height = (endPoint().y() - startPoint().y());
 
     // Записываем размеры
@@ -87,9 +86,7 @@ Square* Square::deserialize(const QStringList& parts) {
     if (!(ok1 && ok2 && ok3 && ok4)) return nullptr;
     QPointF startPoint(startX, startY);
     QPointF endPoint(startX + width, startY + height);
-    // Создаем фигуру
-    Square* square = new Square(startPoint); // инициализация
-    // Устанавливаем точки явно, если нужно
+    Square* square = new Square(startPoint);
     square->setEndPoint(endPoint);
 
     if (parts.size()==8) {
@@ -117,10 +114,8 @@ Square* Square::deserializeBin(QDataStream& in) {
     double startX, startY, width, height;
     in>>value>>startX>>startY>>width>>height;
     QPointF startPoint(startX, startY);
-    QPointF endPoint(startX + width, startY + height); //Замечание! я всегда думаю, что конечая точка дальше начальной, поэтому прибавляю. А как контрить то, что конечная ближе к 0.0 чер начальная ?
-    // Создаем фигуру
-    Square* square = new Square(startPoint); // инициализация
-    // Устанавливаем точки явно, если нужно
+    QPointF endPoint(startX + width, startY + height);
+    Square* square = new Square(startPoint);
     square->setEndPoint(endPoint);
     if (value == "1") {
         QString fillColorStr, borderColorStr;

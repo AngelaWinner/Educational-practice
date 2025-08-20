@@ -3,17 +3,17 @@
 
 InfoDialog::InfoDialog(QWidget *parent) : QDialog(parent) {
     // Установка размера
-    resize(1000, 700);
-
+    resize(600, 850);
+    this->setWindowTitle("Информация о проекте");
     // Создаем элементы
     QLabel *titleLabel = new QLabel("<h1>Информация</h1>");
     QTextBrowser *textBrowser = new QTextBrowser;
     QLabel *imageLabel = new QLabel;
     QPushButton *closeButton = new QPushButton("Закрыть");
 
-    // Устанавливаем текст или HTML в текстовый браузер
     textBrowser->setText("Программа написана Некрасовой Анжелой Борисовной, студенткой 5 группы 1 курса ФПМИ БГУ.\n"
-                         "Данный проект представляет собой векторный редактор. В нем соблюдается порядок слоев, отрисовка фигур, сериализация объектов в текстовый файл, а также чтение текстовых файлов, восстановление объектов и многое другое. Ниже будет инструкция по использованию.\n"
+                         "Данный проект представляет собой векторный редактор. В нем соблюдается порядок слоев, отрисовка фигур, сериализация объектов в текстовый файл, а также чтение текстовых файлов, восстановление объектов и многое другое. "
+                         "Ниже будет инструкция по использованию и рекомендации.\n"
                          "\n1. Рисование фигур\n"
                          "После нажатия кнопки с названием фигуры включается режим рисования заданной фигуры. Рисуется фигура мышью."
                          "При желании сменить тип фигуры необходимо нажать на кнопку с названием желаемой фигуры. \n"
@@ -36,16 +36,16 @@ InfoDialog::InfoDialog(QWidget *parent) : QDialog(parent) {
                          "\nЧудесного рисования!");
 
     // Загружаем изображение
-    QPixmap pixmap(":/rec/images/Image.jpg");
-    imageLabel->setPixmap(pixmap.scaled(400, 300, Qt::KeepAspectRatio));
+    QPixmap pixmap(":/rec/images/Image.png");
+    imageLabel->setPixmap(pixmap.scaled(600, 400, Qt::KeepAspectRatio));
     imageLabel->setAlignment(Qt::AlignCenter);
     QHBoxLayout *hLayout = new QHBoxLayout;
     hLayout->addWidget(textBrowser);
-    hLayout->addWidget(imageLabel);
     // Размещение элементов по вертикали
     QVBoxLayout *layout = new QVBoxLayout;
     layout->addWidget(titleLabel);
     layout->addLayout(hLayout);
+    layout->addWidget(imageLabel);
     connect(closeButton, &QPushButton::clicked, this, &QDialog::close);
     layout->addWidget(closeButton, 0, Qt::AlignRight); // Выравниваем кнопку справа
     setLayout(layout);

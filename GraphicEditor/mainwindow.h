@@ -27,11 +27,10 @@ private:
     void resizeEvent(QResizeEvent* event);
     QColor currentColor = Qt::red;
     int currentThickness;
-    //bool currentFillMode = false;
-    //QColor currentFillColor = Qt::blue; // или цвет, выбранный пользователем
     QColor currentFillColor;
     QColor currentBorderColor;
     bool wasSavedFlag = false;
+    QIcon appIcon;
 private slots:
     void slotTimer();
 

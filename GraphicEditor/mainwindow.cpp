@@ -22,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     this->resize(1100,785);
     this->setFixedSize(1100,785);
+    this->setWindowTitle("Векторный редактор");
+    appIcon = QIcon(":/rec/images/appIcon.png");
+    this->setWindowIcon(appIcon);
 
     scene = new CustomGraphicsScene(this);
     ui->graphicsView->resize(890,580);
@@ -151,7 +154,6 @@ void MainWindow::on_chooseColorButton_clicked() {
     QColor color = QColorDialog::getColor(currentColor, this, "Выберите цвет");
     if (color.isValid()) {
         currentColor = color;
-        // Передавайте цвет сцене или фигурам
         scene->setColorScene(currentColor);
     }
     ui->statusbar->showMessage("Выбор цвета");
@@ -184,18 +186,17 @@ void MainWindow::on_exitButton_clicked()
 {
     if (wasSavedFlag) {
         this->close();
-    } else {
+    } if (scene->items().size() == 0) this->close();
+    else {
         // Спрашиваем пользователя
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Выход",
                                       "Есть несохранённые изменения. Хотите сохранить перед выходом?",
                                       QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (reply == QMessageBox::Yes) {
-            // Вызов функции сохранения
             on_saveButton_clicked();
             this->close();
         } else if (reply == QMessageBox::No) {
-            // Просто закрываемся без сохранения
             this->close();
         }
     }
@@ -203,13 +204,15 @@ void MainWindow::on_exitButton_clicked()
 void MainWindow::infoActionSlot()
 {
     InfoDialog *dialog = new InfoDialog(this);
-    dialog->exec(); // Открывает модальное окно
+    dialog->exec();
     ui->statusbar->showMessage("Получение информации о проекте");
 }
 
 void MainWindow::on_saveButton_clicked() {
 
     QMessageBox messageBox;
+    messageBox.setWindowTitle("Сохранение проекта");
+    messageBox.setWindowIcon(appIcon);
     messageBox.setText("Выберите формат сохранения:");
     QPushButton *textButton = messageBox.addButton(tr("Текстовый"), QMessageBox::YesRole);
     QPushButton *binaryButton = messageBox.addButton(tr("Бинарный"), QMessageBox::NoRole);
@@ -224,14 +227,12 @@ void MainWindow::on_saveButton_clicked() {
         format = "binary";
     }
 
-    QString defaultFileName = "untitled"; // Можно указать по умолчанию
+    QString defaultFileName = "untitled"; //по умолчанию
     QString fileName = QFileDialog::getSaveFileName(this, "Сохранить файл", defaultFileName, filter);
 
     if (fileName.isEmpty()) return; // Пользователь отменил
 
-    // Проверяем, есть ли расширение
     if (format == "text" && !fileName.endsWith(".txt", Qt::CaseInsensitive)) fileName += ".txt";
-
     if (format == "binary" && !fileName.endsWith(".bin", Qt::CaseInsensitive)) fileName += ".bin";
 
     if (format == "text") {
@@ -242,21 +243,16 @@ void MainWindow::on_saveButton_clicked() {
                 for (auto figure : scene->allFigureObjects) {
                     if (figure && figure->getZLayer() == layer) {
                         out << figure->serializeText() << "\n";
-                        //out<<layer<< "\n";
                     }
                 }
-                // Аналогично для линий/кривых
                 for (auto path : scene->paths) {
-                    // если PathElement содержит слой, сравниваем его
                     if (path.layerZ == layer) {
                         out << scene->serializePath(path) << "\n";
-                        //out<<layer<< "\n";
                     }
                 }
                 for (auto line : scene->drawRudeLines) {
                     if (line.layerZ == layer) {
                         out << scene->serializeCurve(line) << "\n";
-                        //out<<layer<< "\n";
                     }
                 }
             }
@@ -312,6 +308,7 @@ void MainWindow::on_openButton_clicked() {
         isBinary = false;
     else {
         QMessageBox::warning(this, "Ошибка", "Не подходящий формат файла");
+        return;
     }
 
     QFile file(fileName);
@@ -319,7 +316,7 @@ void MainWindow::on_openButton_clicked() {
         QMessageBox::warning(this, "Ошибка", "Не удалось открыть выбранный файл");
         return;
     }
-    // Очистим сцену перед загрузкой
+    // Очистим сцену и массивы хранения перед загрузкой
     scene->clear();
     scene->allFigureObjects.clear();
     scene->paths.clear();
@@ -371,23 +368,20 @@ void MainWindow::on_openButton_clicked() {
                 QString colorStr = parts[1];
                 QColor color(colorStr);
                 int thickness = parts[2].toInt();
-                QVector<QPointF> pathPoints = scene->deserializePath(parts);
+                QVector<QPointF> pathPoints = scene->deserializeLine(parts);
                 scene->paths.append(PathElement(pathPoints, color, thickness, scene->getZCounter()+1));
                 scene->setZCounter(scene->getZCounter()+1);
                 // Создаем список для хранения эллипсов
                 QVector<QGraphicsEllipseItem*> ellipses;
                 for (auto point : pathPoints) {
-                    // Создаем эллипс, НЕ добавляем его сразу
                     QGraphicsEllipseItem* ellipse = new QGraphicsEllipseItem(
                         point.x() - thickness/2,
                         point.y() - thickness/2,
                         thickness,
                         thickness
                         );
-                    // Устанавливаем кисть и перо
                     ellipse->setPen(Qt::NoPen);
                     ellipse->setBrush(QBrush(color));
-                    // Не добавляем в сцену тут
                     ellipses.append(ellipse);
                 }
                 for (auto* item : ellipses) {
@@ -397,7 +391,7 @@ void MainWindow::on_openButton_clicked() {
                 QString colorStr = parts[1];
                 QColor color(colorStr);
                 int thickness = parts[2].toInt();
-                QVector<QPointF> pathPoints = scene->deserializeCurve(parts);
+                QVector<QPointF> pathPoints = scene->deserializeLine(parts);
                 QVector<QGraphicsLineItem*> lines;
                 scene->drawRudeLines.append(PathElement(pathPoints, color, thickness, scene->getZCounter()+1));
                 scene->setZCounter(scene->getZCounter()+1);
@@ -416,10 +410,8 @@ void MainWindow::on_openButton_clicked() {
                     itemsToAdd.append(lineItem);
                 }
             }
-            // Аналогично для других фигур
         }
 
-        // Теперь добавляем их на сцену в обратном порядке, чтобы сохранить слои
         for (int i =0; i< itemsToAdd.size(); ++i) {
             scene->addItem(itemsToAdd[i]);
         }
@@ -473,17 +465,14 @@ void MainWindow::on_openButton_clicked() {
                 // Создаем список для хранения эллипсов
                 QVector<QGraphicsEllipseItem*> ellipses;
                 for (auto point : pathPoints) {
-                    // Создаем эллипс, НЕ добавляем его сразу
                     QGraphicsEllipseItem* ellipse = new QGraphicsEllipseItem(
                         point.x() - thickness/2,
                         point.y() - thickness/2,
                         thickness,
                         thickness
                         );
-                    // Устанавливаем кисть и перо
                     ellipse->setPen(Qt::NoPen);
                     ellipse->setBrush(QBrush(color));
-                    // Не добавляем в сцену тут
                     ellipses.append(ellipse);
                 }
                 for (auto* item : ellipses) {
@@ -508,10 +497,7 @@ void MainWindow::on_openButton_clicked() {
                     itemsToAdd.append(lineItem);
                 }
             }
-            // Аналогично для других фигур
         }
-
-        // Теперь добавляем их на сцену в обратном порядке, чтобы сохранить слои
         for (int i =0; i< itemsToAdd.size(); ++i) {
             scene->addItem(itemsToAdd[i]);
         }

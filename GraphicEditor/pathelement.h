@@ -8,7 +8,7 @@ struct PathElement
     QVector<QPointF> pathPoints;
     QColor color;
     int thickness;
-    int layerZ; // добавляем слой
+    int layerZ;
     PathElement(QVector<QPointF> pathPointsParameter, QColor colorParameter, int thicknessParameter, int layerZParameter = 0);
 };
 

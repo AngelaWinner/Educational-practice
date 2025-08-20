@@ -38,9 +38,8 @@ void ChooseThicknessDialog::on_OkButton_Clicked()
     int value = lineEdit->text().toInt(&ok);
     if (ok && value >= lowValue && value <= upValue) {
         thickness = value;
-        accept(); // закрывает диалог и возвращает QDialog::Accepted
+        accept(); // закрывает диалог
     } else {
-        // Можно добавить сообщение об ошибке
         QMessageBox::warning(this, "Ошибка", QString("Введите число от %1 до %2").arg(lowValue).arg(upValue));
         lineEdit->setFocus();
     }

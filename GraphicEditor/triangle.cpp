@@ -4,7 +4,6 @@ Triangle::Triangle(QPointF point, QObject *parent) : Figure(point, parent) {
     Q_UNUSED(point);
 }
 Triangle::~Triangle(){}
-//реализуем метод отрисовки
 void Triangle::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
     if (fillColorSetted && borderColorSetted) {
         painter->setPen(QPen(getBorderColorFigure(), getThicknessFigure()));
@@ -50,18 +49,14 @@ void Triangle::serializeBin(QDataStream& out) const {
     if (fillColorSetted && borderColorSetted) {
         out << QString("1"); //1 если два цвета, 0  если один
     } else out << QString("0");
-
-    // Записываем начальные координаты
     out << startPoint().x() << startPoint().y();
     out << endPoint().x() << endPoint().y();
-    // Записываем цветовые параметры
     if (fillColorSetted && borderColorSetted) {
         out << getFillColorFigure().name()
         << getBorderColorFigure().name();
     } else {
         out << getColorFigure().name();
     }
-    // Записываем толщину линии
     out << getThicknessFigure();
 }
 

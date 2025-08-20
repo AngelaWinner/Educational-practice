@@ -232,7 +232,7 @@ QVector<QPointF> CustomGraphicsScene::deserializeCurveBin(QDataStream& in, QColo
     return pathPoints;
 }
 
-QVector<QPointF> CustomGraphicsScene::deserializePath(QStringList parts) {
+QVector<QPointF> CustomGraphicsScene::deserializeLine(QStringList parts) {
     QVector<QPointF> pathPoints;
     // parts[0] = "Path"
     // parts[1] = цвет
@@ -267,23 +267,7 @@ QString CustomGraphicsScene::serializeCurve (const PathElement& line) { //мет
     return linesList.join(";");
 }
 
-QVector<QPointF> CustomGraphicsScene::deserializeCurve(QStringList parts) {
-    QVector<QPointF> pathPoints;
-    // parts[0] = "Curve"
-    // остальные = точки
-    for (int i = 1; i < parts.size(); ++i) {
-        QStringList coords = parts[i].split(',', Qt::SkipEmptyParts);
-        if (coords.size() == 2) {
-            bool okX, okY;
-            double x = coords[0].toDouble(&okX);
-            double y = coords[1].toDouble(&okY);
-            if (okX && okY) {
-                pathPoints.append(QPointF(x, y));
-            }
-        }
-    }
-    return pathPoints;
-}
+
 
 int CustomGraphicsScene:: getZCounter() const{
     return zCounter;
