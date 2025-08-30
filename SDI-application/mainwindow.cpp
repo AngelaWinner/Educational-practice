@@ -17,8 +17,11 @@ MainWindow::MainWindow(QString currentFileName, QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setAttribute(Qt::WA_DeleteOnClose);
+    this->setAttribute(Qt::WA_DeleteOnClose); //удалять окно автоматически при его закрытии.
     this->TextChanged = false;
+    this->setWindowTitle("SDI-application");
+    appIcon = QIcon(":/rec/img/appIcon.png");
+    this->setWindowIcon(appIcon);
     QMenu* FileMenu = new QMenu("File");
     QMenu* EditMenu = new QMenu("Edit");
     QMenu* ViewMenu = new QMenu("View");
@@ -118,20 +121,46 @@ void MainWindow::OpenFileActionSlot()
         return;
     if(this->file)
         this->file->close();
-    QString name = QFileDialog::getOpenFileName(this,"Get Open File Name");
-    if(name=="")
+
+    QString filter = "Все файлы (*)";
+    QString fileName = QFileDialog::getOpenFileName(this, "Get Open File Name", "", filter);
+
+    if (fileName.isEmpty()) {
+        return; // Пользователь отменил
+    }
+    // Определяем формат по расширению файла
+    bool isBinary = false;
+    if (fileName.endsWith(".bin", Qt::CaseInsensitive))
+        isBinary = true;
+    else if (fileName.endsWith(".txt", Qt::CaseInsensitive))
+        isBinary = false;
+    else {
+        QMessageBox::warning(this, "Error", "Not correct format of file");
         return;
+    }
+
     delete this->file;
-    this->file = new QFile(name);
-    if(!this->file->open(QIODevice::ReadOnly | QIODevice::Text)){
+    this->file = new QFile(fileName);
+    if (!this->file->open(QIODevice::ReadOnly)) {
         QMessageBox::warning(this,"Error","There was an error while opening file");
         return;
     }
+
+    if (!isBinary){
+        QString text;
+        QTextStream fileTextStream(this->file);
+        text = fileTextStream.readAll();
+        this->textEdit->setPlainText(text);
+        this->currentFileFormat = "text";
+    } else {
+        QDataStream fileDataStream(this->file);
+        QString text;
+        fileDataStream >> text;
+        this->textEdit->setPlainText(text);
+        this->currentFileFormat = "binary";
+    }
     this->setWindowTitle(this->file->fileName());
-    QString text;
-    QTextStream fileTextStream(this->file);
-    text = fileTextStream.readAll();
-    this->textEdit->setPlainText(text);
+
     this->TextChanged = false;
     this->file->close();
 }
@@ -159,26 +188,59 @@ bool MainWindow::isSafeToClose()
 
 void MainWindow::SaveFileActionSlot()
 {
-     if (this->file) {
-            if (this->file->open(QIODevice::WriteOnly | QIODevice::Text)) {
-                QTextStream outStream(this->file);
-                outStream << this->textEdit->document()->toPlainText();
-                this->file->close();
-                QMessageBox::information(this, "Saved", "Saved Successfully");
-                this->setWindowTitle(this->file->fileName());
-                this->TextChanged = false;
-            } else {
-                QMessageBox::warning(this, "Error", "Cannot open file for writing");
-            }
+    if (this->file) {
+        if(this->currentFileFormat == "text") {
+             if (this->file->open(QIODevice::WriteOnly | QIODevice::Text)) {
+                 QTextStream outStream(this->file);
+                 outStream << this->textEdit->document()->toPlainText();
+                 this->file->close();
+                 QMessageBox::information(this, "Saved", "Saved Successfully");
+                 this->setWindowTitle(this->file->fileName());
+                 this->TextChanged = false;
+             } else {
+                 QMessageBox::warning(this, "Error", "Cannot open file for writing");
+             }
         } else {
-            QString fileName = QFileDialog::getSaveFileName(this, "Save as");
-            if (fileName.isEmpty()) {
-                return;
+            if(this->currentFileFormat == "binary") {
+                if (this->file->open(QIODevice::WriteOnly)) {
+                    QDataStream outStream(this->file);
+                    outStream << this->textEdit->document()->toPlainText();
+                    this->file->close();
+                    QMessageBox::information(this, "Saved", "Saved Successfully");
+                    this->setWindowTitle(this->file->fileName());
+                    this->TextChanged = false;
+                } else {
+                    QMessageBox::warning(this, "Error", "Cannot open file for writing");
+                }
             }
-            if (!fileName.endsWith(".txt")) {
-                fileName += ".txt";
-            }
-            QFile* newFile = new QFile(fileName);
+        }
+    } else {
+        QMessageBox messageBox;
+        messageBox.setWindowTitle("Saving project");
+        messageBox.setWindowIcon(appIcon);
+        messageBox.setText("Choose the format:");
+        QPushButton *textButton = messageBox.addButton(tr("Text"), QMessageBox::YesRole);
+        QPushButton *binaryButton = messageBox.addButton(tr("Binary"), QMessageBox::NoRole);
+        messageBox.exec();
+
+        QString filter, format;
+        if (messageBox.clickedButton() == textButton) {
+         filter = "Text Files (*.txt);;All Files (*)";
+         format = "text";
+        } else if (messageBox.clickedButton() == binaryButton) {
+         filter = "Binary Files (*.bin);;All Files (*)";
+         format = "binary";
+        }
+        QString defaultFileName = "untitled"; //по умолчанию
+        QString fileName = QFileDialog::getSaveFileName(this, "Save file", defaultFileName, filter);
+
+        if (fileName.isEmpty()) {
+            return;
+        }
+        if (format == "text" && !fileName.endsWith(".txt", Qt::CaseInsensitive)) fileName += ".txt";
+        if (format == "binary" && !fileName.endsWith(".bin", Qt::CaseInsensitive)) fileName += ".bin";
+        QFile* newFile = new QFile(fileName);
+        if (format == "text") {
             if (newFile->open(QIODevice::WriteOnly | QIODevice::Text)) {
                 QTextStream outStream(newFile);
                 outStream << this->textEdit->toPlainText();
@@ -192,39 +254,83 @@ void MainWindow::SaveFileActionSlot()
                 QMessageBox::warning(this, "Error", "Error opening file for writing");
                 delete newFile;
             }
+        } else {
+            if (newFile->open(QIODevice::WriteOnly)) {
+                QDataStream outStream(newFile);
+                outStream << this->textEdit->toPlainText();
+                newFile->close();
+                delete this->file;
+                this->file = newFile;
+                this->setWindowTitle(this->file->fileName());
+                QMessageBox::information(this, "Saved", "Saved Successfully");
+                this->TextChanged = false;
+            } else {
+                QMessageBox::warning(this, "Error", "Error opening file for writing");
+                delete newFile;
+            }
         }
+    }
 }
 void MainWindow::SaveAsFileActionSlot()
 {
-    QString name = QFileDialog::getSaveFileName(this,"Save As");
-    if (name.isEmpty()) return;
-    if (!name.endsWith(".txt")) name += ".txt";
-    if (this->TextChanged) {
+    //if (this->TextChanged) {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Save Changes", "Do you want to save changes?", QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
         if (reply == QMessageBox::Cancel) {
             return;
         }
         if (reply == QMessageBox::Yes) {
-            if (this->file && this->file->isOpen()) {
-                QTextStream fileTextStream(file);
-                fileTextStream << textEdit->document()->toPlainText();
-                this->file->close();
-            } else {
-                QFile saveFile(name);
+            QMessageBox messageBox;
+            messageBox.setWindowTitle("Saving project");
+            messageBox.setWindowIcon(appIcon);
+            messageBox.setText("Choose the format:");
+            QPushButton *textButton = messageBox.addButton(tr("Text"), QMessageBox::YesRole);
+            QPushButton *binaryButton = messageBox.addButton(tr("Binary"), QMessageBox::NoRole);
+            messageBox.exec();
+
+            QString filter, format;
+            if (messageBox.clickedButton() == textButton) {
+                filter = "Text Files (*.txt);;All Files (*)";
+                format = "text";
+            } else if (messageBox.clickedButton() == binaryButton) {
+                filter = "Binary Files (*.bin);;All Files (*)";
+                format = "binary";
+            }
+            QString defaultFileName = "untitled"; //по умолчанию
+            QString name = QFileDialog::getSaveFileName(this, "Save file", defaultFileName, filter);
+
+            if (name.isEmpty()) return;
+
+            if (format == "text" && !name.endsWith(".txt", Qt::CaseInsensitive)) name += ".txt";
+            if (format == "binary" && !name.endsWith(".bin", Qt::CaseInsensitive)) name += ".bin";
+
+            QFile saveFile(name);
+            if (format == "text") {
                 if (!saveFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
                     QMessageBox::warning(this, "Error", "Error opening file for writing");
                     return;
                 }
-                QTextStream outSaveStream(&saveFile);
-                outSaveStream << textEdit->document()->toPlainText();
+                QTextStream outStream(&saveFile);
+                outStream << textEdit->toPlainText();
                 saveFile.close();
-
-                this->file = new QFile(name);
-                setWindowTitle(name);
+            } else { // binary
+                if (!saveFile.open(QIODevice::WriteOnly)) {
+                    QMessageBox::warning(this, "Error", "Error opening file for writing");
+                    return;
+                }
+                QDataStream outStream(&saveFile);
+                outStream << textEdit->toPlainText();
+                saveFile.close();
             }
+
+            // Обновляем состояние и заголовок окна
+            delete this->file;
+            this->file = new QFile(name);
+            this->setWindowTitle(this->file->fileName());
             this->TextChanged = false;
+            QMessageBox::information(this, "Saved", "Saved Successfully");
+            this->currentFileFormat = format;
         }
-    }
+    //}
 }
 
 void MainWindow::SetFontTriggered()
@@ -241,7 +347,7 @@ void MainWindow::aboutActionSlot()
     QDialog* dialog = new QDialog(this);
     QVBoxLayout* layout = new QVBoxLayout(dialog);
     QString text = "Программа написана Некрасовой Анжелой Борисовной, студенткой 5 группы 1 курса ФПМИ БГУ\n";
-    text += "Разработка простейшего SDI-приложения, иллюстрирующего использование меню, корректировку, сохранение и восстановление текстовой, числовой информации в текстовом (QTextStream) формате.\n";
+    text += "Разработка простейшего SDI-приложения, иллюстрирующего использование меню, корректировку, сохранение и восстановление текстовой, числовой информации в текстовом (QTextStream) и бинарном (QDataStream) форматах.\n";
     QTextBrowser* textBrowser = new QTextBrowser(dialog);
     textBrowser->setText(text);
     layout->addWidget(textBrowser);

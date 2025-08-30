@@ -27,6 +27,8 @@ private:
     Ui::MainWindow *ui;
     void closeEvent(QCloseEvent *);
     bool isSafeToClose();
+    QIcon appIcon;
+    QString currentFileFormat;
 private slots:
     void NewFileActionSlot();
     void OpenFileActionSlot();

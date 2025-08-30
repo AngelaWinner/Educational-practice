@@ -7,5 +7,6 @@
         <file>img/save.jpg</file>
         <file>img/saveAs.jpg</file>
         <file>img/setFont.jpg</file>
+        <file>img/appIcon.png</file>
     </qresource>
 </RCC>
